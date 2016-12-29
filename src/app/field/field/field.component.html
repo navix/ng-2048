@@ -1,0 +1,36 @@
+<div class="field">
+  <div class="grid-row" *ngFor="let row of grid">
+    <div *ngFor="let tile of row"
+         [style.height.px]="tileHeight"
+         [style.width.px]="tileWidth"
+         class="grid-tile">
+      <div class="fill"></div>
+    </div>
+  </div>
+
+  <div class="row" *ngFor="let row of fieldView; let rowIndex = index">
+    <div *ngFor="let tile of row; let tileIndex = index"
+         (click)="fill(rowIndex, tileIndex)"
+         [@tile]="animationsView[rowIndex][tileIndex]"
+         [style.height.px]="tileHeight"
+         [style.width.px]="tileWidth"
+         [style.top.px]="rowIndex * tileHeight"
+         [style.left.px]="tileIndex * tileWidth"
+         class="tile">
+      <div class="fill" [ngClass]="'-color-' + tile">{{ tile }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="info">
+  2048 Game by Angular 2<br>
+  <a href="https://nvx.me">Sasha Novik</a> | <a href="https://github.com/Navix/ng-2048">GitHub</a>
+</div>
+
+<!--<div class="actions">
+  <button (click)="fillRandom()">Create random tile</button>
+  <button (click)="moveRight()">&rarr;</button>
+  <button (click)="moveLeft()">&larr;</button>
+  <button (click)="moveUp()">&uarr;</button>
+  <button (click)="moveDown()">&darr;</button>
+</div>-->

@@ -1,1 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
+
+@import url('https://fonts.googleapis.com/css?family=Baloo+Thambi');
+
+html {
+  background: #371722;
+  color: #BBAB9B;
+  font-family: 'Baloo Thambi', cursive;
+  font-size: 14px;
+}
