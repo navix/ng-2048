@@ -13,3 +13,4 @@
 - [ ] calc & display earned points
 - [ ] "new game" button
 - [ ] fix game over
+- [ ] AOT build
