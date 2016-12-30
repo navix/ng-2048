@@ -2,7 +2,7 @@
 
 ## Powered by Angular
 
-* Demo: https://nvx.me
+* Demo: https://2048.nvx.me
 * Stream of creating: https://www.youtube.com/watch?v=MiWPjFt8GEQ
 
 ## ToDo
