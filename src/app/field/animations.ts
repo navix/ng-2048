@@ -1,6 +1,4 @@
-import {
-  trigger, state, style, transition, animate, keyframes, AnimationStateTransitionMetadata, AnimationMetadata
-} from '@angular/core';
+import { animate, AnimationMetadata, keyframes, state, style, transition, trigger, } from '@angular/animations';
 
 export function compile(size: number, duration: number) {
   return function () {
@@ -18,14 +16,13 @@ export function compile(size: number, duration: number) {
           moveUp(duration, i),
           moveRight(duration, i),
           moveDown(duration, i),
-          moveLeft(duration, i)
+          moveLeft(duration, i),
       );
     }
     return trigger('tile', animations);
   }();
 }
-
-export function moveUp(duration: number, step: number): AnimationStateTransitionMetadata {
+export function moveUp(duration: number, step: number) {
   return function () {
     return transition(`base => moveUp-${step}`, [
       animate(duration, keyframes([
@@ -33,12 +30,11 @@ export function moveUp(duration: number, step: number): AnimationStateTransition
         style({transform: `translateY(-${step * 100}%)`, zIndex: 1, offset: 0.7}),
         style({transform: `translateY(-${step * 100}%) scale(1.1)`, zIndex: 1, offset: 0.85}),
         style({transform: `translateY(-${step * 100}%) scale(1)`, zIndex: 1, offset: 1}),
-      ]))
+      ])),
     ]);
   }();
 }
-
-export function moveRight(duration: number, step: number): AnimationStateTransitionMetadata {
+export function moveRight(duration: number, step: number) {
   return function () {
     return transition(`base => moveRight-${step}`, [
       animate(duration, keyframes([
@@ -46,12 +42,11 @@ export function moveRight(duration: number, step: number): AnimationStateTransit
         style({transform: `translateX(${step * 100}%)`, zIndex: 1, offset: 0.7}),
         style({transform: `translateX(${step * 100}%) scale(1.1)`, zIndex: 1, offset: 0.85}),
         style({transform: `translateX(${step * 100}%) scale(1)`, zIndex: 1, offset: 1}),
-      ]))
+      ])),
     ]);
   }();
 }
-
-export function moveDown(duration: number, step: number): AnimationStateTransitionMetadata {
+export function moveDown(duration: number, step: number) {
   return function () {
     return transition(`base => moveDown-${step}`, [
       animate(duration, keyframes([
@@ -59,12 +54,11 @@ export function moveDown(duration: number, step: number): AnimationStateTransiti
         style({transform: `translateY(${step * 100}%)`, zIndex: 1, offset: 0.7}),
         style({transform: `translateY(${step * 100}%) scale(1.1)`, zIndex: 1, offset: 0.85}),
         style({transform: `translateY(${step * 100}%) scale(1)`, zIndex: 1, offset: 1}),
-      ]))
+      ])),
     ]);
   }();
 }
-
-export function moveLeft(duration: number, step: number): AnimationStateTransitionMetadata {
+export function moveLeft(duration: number, step: number) {
   return function () {
     return transition(`base => moveLeft-${step}`, [
       animate(duration, keyframes([
@@ -72,7 +66,7 @@ export function moveLeft(duration: number, step: number): AnimationStateTransiti
         style({transform: `translateX(-${step * 100}%)`, zIndex: 1, offset: 0.7}),
         style({transform: `translateX(-${step * 100}%) scale(1.1)`, zIndex: 1, offset: 0.85}),
         style({transform: `translateX(-${step * 100}%) scale(1)`, zIndex: 1, offset: 1}),
-      ]))
+      ])),
     ]);
   }();
 }

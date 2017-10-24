@@ -1,62 +1,45 @@
-import {
-  Component, OnInit, HostListener, AfterViewChecked, trigger, state, style, transition,
-  animate,
-  keyframes
-} from '@angular/core';
-import { moveRight, compile } from '../animations';
+import { AfterViewChecked, Component, HostListener, OnInit } from '@angular/core';
+import { compile } from '../animations';
 
 const size = 4;
 const baseValue = 2;
-
 export type FieldState = number[][];
-
 export type Direction = 'up' | 'right' | 'down' | 'left';
-
 export type AnimationState = Animation[][];
 export type Animation = string;
 export const animationDuration = 300;
 
 // @todo do not randomize if tiles didnt move
-
 @Component({
   selector: 'fm-field',
   templateUrl: './field.component.html',
   styleUrls: ['./field.component.scss'],
   animations: [
     compile(size, animationDuration),
-  ]
+  ],
 })
 export class FieldComponent implements OnInit, AfterViewChecked {
+  tileHeight = 100;
 
-  @HostListener('document:keydown.ArrowUp', ['$event.target']) arrowUp() {
-    this.moveUp();
-  };
+  tileWidth = 100;
 
-  @HostListener('document:keydown.ArrowRight', ['$event.target']) arrowRight() {
-    this.moveRight();
-  };
+  private animations: AnimationState;
 
-  @HostListener('document:keydown.ArrowDown', ['$event.target']) arrowDown() {
-    this.moveDown();
-  };
+  private animationsView: AnimationState;
 
-  @HostListener('document:keydown.ArrowLeft', ['$event.target']) arrowLeft() {
-    this.moveLeft();
-  };
+  private field: FieldState = new Array(size).fill(null).map(_ => new Array(size).fill(null));
+
+  private fieldMergeBlock: boolean[][];
+
+  private fieldView: FieldState;
 
   private grid = new Array(size).fill(new Array(size).fill(null));
 
-//  private state$ = new BehaviorSubject<FieldState>(new Array(size).fill(null).map(_ => new Array(size).fill(null)));
-  private field: FieldState = new Array(size).fill(null).map(_ => new Array(size).fill(null));
-  private fieldView: FieldState;
-
-  private animations: AnimationState;
-  private animationsView: AnimationState;
-
-  tileWidth = 100;
-  tileHeight = 100;
-
   constructor() {
+  }
+
+  ngAfterViewChecked() {
+    console.log('ViewChecked');
   }
 
   ngOnInit() {
@@ -66,8 +49,32 @@ export class FieldComponent implements OnInit, AfterViewChecked {
     this.render(false);
   }
 
-  ngAfterViewChecked() {
-    console.log('ViewChecked');
+  @HostListener('document:keydown.ArrowDown', ['$event.target'])
+  arrowDown() {
+    this.moveDown();
+  };
+
+  @HostListener('document:keydown.ArrowLeft', ['$event.target'])
+  arrowLeft() {
+    this.moveLeft();
+  };
+
+  @HostListener('document:keydown.ArrowRight', ['$event.target'])
+  arrowRight() {
+    this.moveRight();
+  };
+
+  @HostListener('document:keydown.ArrowUp', ['$event.target'])
+  arrowUp() {
+    this.moveUp();
+  };
+
+  clone(state) {
+    let copy = [];
+    state.forEach(row => {
+      copy.push([...row]);
+    });
+    return copy;
   }
 
   fill(x: number, y: number) {
@@ -87,11 +94,9 @@ export class FieldComponent implements OnInit, AfterViewChecked {
         }
       });
     });
-
     if (empties.length === 0) {
       alert('Game over!');
     }
-
     // randomizer
     let value = baseValue;
     if (max > baseValue ** baseValue) {
@@ -104,75 +109,14 @@ export class FieldComponent implements OnInit, AfterViewChecked {
       }
       value = stack[Math.floor(Math.random() * stack.length)];
     }
-
     let coords = empties[Math.floor(Math.random() * empties.length)];
     this.field[coords[0]][coords[1]] = value;
-
     // @todo immu
     //this.state$.next(field);
   }
 
-  moveUp() {
-    let moved = false;
-    // iterate from top to down
-    for (let rowIndex = 0; rowIndex < size; rowIndex++) {
-      // iterate from left to right
-      for (let tileIndex = 0; tileIndex < size; tileIndex++) {
-        // check value
-        if (this.field[rowIndex][tileIndex] !== null) {
-          // move to top edge
-          let searchIndex;
-          for (searchIndex = rowIndex; searchIndex >= 0; searchIndex--) {
-            let mergeResult = this.mergeTiles(this.field, searchIndex, tileIndex, 'up');
-            if (mergeResult !== false) {
-              const diff = mergeResult === true ? rowIndex - searchIndex + 1 : rowIndex - searchIndex;
-              if (diff !== 0) {
-                moved = true;
-                this.animations[rowIndex][tileIndex] = `moveUp-${diff}`;
-              }
-              break;
-            }
-          }
-        }
-      }
-    }
-    if (moved) {
-      this.fillRandom();
-      this.render();
-    }
-  }
-
-  moveRight() {
-    let moved = false;
-    // iterate from top to down
-    for (let rowIndex = 0; rowIndex < size; rowIndex++) {
-      // iterate from right to left
-      for (let tileIndex = size - 1; tileIndex >= 0; tileIndex--) {
-        // check value
-        if (this.field[rowIndex][tileIndex] !== null) {
-          // move to right edge
-          let searchIndex;
-          for (searchIndex = tileIndex; searchIndex < size; searchIndex++) {
-            let mergeResult = this.mergeTiles(this.field, rowIndex, searchIndex, 'right');
-            if (mergeResult !== false) {
-              const diff = mergeResult === true ? searchIndex - tileIndex + 1 : searchIndex - tileIndex;
-              if (diff !== 0) {
-                moved = true;
-                this.animations[rowIndex][tileIndex] = `moveRight-${diff}`;
-              }
-              break;
-            }
-          }
-        }
-      }
-    }
-    if (moved) {
-      this.fillRandom();
-      this.render();
-    }
-  }
-
   moveDown() {
+    this.initMovement();
     let moved = false;
     // iterate from down to top
     for (let rowIndex = size - 1; rowIndex >= 0; rowIndex--) {
@@ -203,6 +147,7 @@ export class FieldComponent implements OnInit, AfterViewChecked {
   }
 
   moveLeft() {
+    this.initMovement();
     let moved = false;
     // iterate from top to down
     for (let rowIndex = 0; rowIndex < size; rowIndex++) {
@@ -232,38 +177,66 @@ export class FieldComponent implements OnInit, AfterViewChecked {
     }
   }
 
-  private mergeTiles(field: FieldState, rowIndex: number, tileIndex: number, direction: Direction) {
-    const size = field.length;
-    const tileValue = field[rowIndex][tileIndex];
-    // calc destination coordinates
-    const destRowIndex = direction === 'up' ? rowIndex - 1 : direction === 'down' ? rowIndex + 1 : rowIndex;
-    const destTileIndex = direction === 'left' ? tileIndex - 1 : direction === 'right' ? tileIndex + 1 : tileIndex;
-    // check edges
-    if (destRowIndex >= 0 && destRowIndex < size && destTileIndex >= 0 && destTileIndex < size) {
-      if (field[destRowIndex][destTileIndex] === null) {
-        // move to destination
-        field[destRowIndex][destTileIndex] = tileValue;
-        field[rowIndex][tileIndex] = null;
-        return false;
-      } else if (field[destRowIndex][destTileIndex] === tileValue) {
-        // merge with destination
-        field[destRowIndex][destTileIndex] *= 2;
-        field[rowIndex][tileIndex] = null;
-        return true;
-      }
-      else {
-        // destination is not equal
-        return null;
+  moveRight() {
+    this.initMovement();
+    let moved = false;
+    // iterate from top to down
+    for (let rowIndex = 0; rowIndex < size; rowIndex++) {
+      // iterate from right to left
+      for (let tileIndex = size - 1; tileIndex >= 0; tileIndex--) {
+        // check value
+        if (this.field[rowIndex][tileIndex] !== null) {
+          // move to right edge
+          let searchIndex;
+          for (searchIndex = tileIndex; searchIndex < size; searchIndex++) {
+            let mergeResult = this.mergeTiles(this.field, rowIndex, searchIndex, 'right');
+            if (mergeResult !== false) {
+              const diff = mergeResult === true ? searchIndex - tileIndex + 1 : searchIndex - tileIndex;
+              if (diff !== 0) {
+                moved = true;
+                this.animations[rowIndex][tileIndex] = `moveRight-${diff}`;
+              }
+              break;
+            }
+          }
+        }
       }
     }
-    else {
-      // this is the edge
-      return null;
+    if (moved) {
+      this.fillRandom();
+      this.render();
     }
   }
 
-  resetAnimations() {
-    this.animations = new Array(size).fill(null).map(_ => new Array(size).fill('base'));
+  moveUp() {
+    this.initMovement();
+    let moved = false;
+    // iterate from top to down
+    for (let rowIndex = 0; rowIndex < size; rowIndex++) {
+      // iterate from left to right
+      for (let tileIndex = 0; tileIndex < size; tileIndex++) {
+        // check value
+        if (this.field[rowIndex][tileIndex] !== null) {
+          // move to top edge
+          let searchIndex;
+          for (searchIndex = rowIndex; searchIndex >= 0; searchIndex--) {
+            let mergeResult = this.mergeTiles(this.field, searchIndex, tileIndex, 'up');
+            if (mergeResult !== false) {
+              const diff = mergeResult === true ? rowIndex - searchIndex + 1 : rowIndex - searchIndex;
+              if (diff !== 0) {
+                moved = true;
+                this.animations[rowIndex][tileIndex] = `moveUp-${diff}`;
+              }
+              break;
+            }
+          }
+        }
+      }
+    }
+    if (moved) {
+      this.fillRandom();
+      this.render();
+    }
   }
 
   render(animate = true) {
@@ -281,13 +254,48 @@ export class FieldComponent implements OnInit, AfterViewChecked {
     }
   }
 
-  clone(state) {
-    let copy = [];
-    state.forEach(row => {
-      copy.push([...row]);
-    });
-    return copy;
+  resetAnimations() {
+    this.animations = new Array(size).fill(null).map(_ => new Array(size).fill('base'));
   }
 
+  private initMovement() {
+    this.fieldMergeBlock = new Array(size).fill(false).map(_ => new Array(size).fill(false));
+  }
 
+  private mergeTiles(field: FieldState, rowIndex: number, tileIndex: number, direction: Direction) {
+    const size = field.length;
+    const tileValue = field[rowIndex][tileIndex];
+    // calc destination coordinates
+    const destRowIndex = direction === 'up' ? rowIndex - 1 : direction === 'down' ? rowIndex + 1 : rowIndex;
+    const destTileIndex = direction === 'left' ? tileIndex - 1 : direction === 'right' ? tileIndex + 1 : tileIndex;
+    // check edges
+    if (destRowIndex >= 0 && destRowIndex < size && destTileIndex >= 0 && destTileIndex < size) {
+      if (this.fieldMergeBlock[destRowIndex][destTileIndex]) {
+        // already merged tile
+        return null;
+      } else {
+        if (field[destRowIndex][destTileIndex] === null) {
+          // move to destination
+          field[destRowIndex][destTileIndex] = tileValue;
+          field[rowIndex][tileIndex] = null;
+          return false;
+        } else if (field[destRowIndex][destTileIndex] === tileValue) {
+          // merge with destination
+          field[destRowIndex][destTileIndex] *= 2;
+          field[rowIndex][tileIndex] = null;
+          // mark merged tile (not it not available to another merge)
+          this.fieldMergeBlock[destRowIndex][destTileIndex] = true;
+          return true;
+        }
+        else {
+          // destination is not equal
+          return null;
+        }
+      }
+    }
+    else {
+      // this is the edge
+      return null;
+    }
+  }
 }
