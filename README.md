@@ -2,7 +2,7 @@
 
 ## Powered by Angular
 
-* Demo: https://2048.nvx.me
+* Demo: https://2048.novyk.org
 * Stream of creating: https://www.youtube.com/watch?v=MiWPjFt8GEQ
 
 ## ToDo
